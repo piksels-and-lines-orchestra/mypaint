@@ -23,7 +23,7 @@ LOAD_CHUNK_SIZE = 64*1024
 
 from layer import DEFAULT_COMPOSITE_OP, VALID_COMPOSITE_OPS
 
-def send_plo_message(cmd):
+def send_plo_message(cmd, app=None):
 
     import httplib
 
@@ -36,19 +36,33 @@ def send_plo_message(cmd):
 
     try:
         connection = httplib.HTTPConnection(url, port, timeout=timeout)
+    except Exception, e:
+        print e
 
-        instrument = 'mypaint'
-        action = cmd.__class__.__name__
-        description = cmd.display_name
-        #parameters
+    instrument = 'mypaint'
+    action = cmd.__class__.__name__
+    description = cmd.display_name
 
-        url = '/' + instrument + '/' + action
-        print url
+        #try:
+    if app and getattr(app, 'brushmanager', None):
+        current_brush = app.brushmanager.selected_brush.name
+    else:
+        current_brush = ''
+
+    url = '/' + instrument + '/' + action
+
+    # Make a stroke done with different brush have a different string
+    if action == 'Stroke' and current_brush:
+        url = url + '/' + current_brush
+
+    print url
+    try:
         request = connection.request("GET", url)
         request = connection.getresponse()
         print request.status, request.reason
-    except Exception:
-        pass
+    except Exception, e:
+        print e
+
 
 class SaveLoadError(Exception):
     """Expected errors on loading or saving, like missing permissions or non-existing files."""
@@ -71,7 +85,10 @@ class Document():
     #   or discarded as empty before any other action is possible.
     #   (split_stroke)
 
-    def __init__(self, brushinfo=None):
+    def __init__(self, brushinfo=None, app=None):
+
+        self.app = app #HACK
+
         if not brushinfo:
             brushinfo = brush.BrushInfo()
             brushinfo.load_defaults()
@@ -197,7 +214,7 @@ class Document():
         self.stroke.stop_recording()
         if not self.stroke.empty:
             cmd = command.Stroke(self, self.stroke, self.snapshot_before_stroke)
-            send_plo_message(cmd)
+            send_plo_message(cmd, self.app)
             self.command_stack.do(cmd)
 
             del self.snapshot_before_stroke
@@ -287,7 +304,7 @@ class Document():
 
     def do(self, cmd):
         self.split_stroke()
-        send_plo_message(cmd)
+        send_plo_message(cmd, self.app)
         self.command_stack.do(cmd)
 
     def get_last_command(self):

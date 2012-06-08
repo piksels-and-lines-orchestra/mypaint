@@ -24,7 +24,7 @@ class Document(object):
 
     def __init__(self, app, leader=None):
         self.app = app
-        self.model = lib.document.Document(self.app.brush)
+        self.model = lib.document.Document(self.app.brush, self.app)
         self.followers = []
 
         # View
