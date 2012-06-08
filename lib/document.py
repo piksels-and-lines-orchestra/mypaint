@@ -27,12 +27,15 @@ def send_plo_message(cmd):
 
     import httplib
 
-    url = "10.0.1.23"
-    #url = "127.0.0.1"
-    port = 2342
-    #port = 8000
+    timeout = int(os.environ.get('PLO_TIMEOUT', '1'))
+    server_string = os.environ.get('PLO_SERVER', '10.0.1.23:2342')
+    url, port = server_string.split(':')
+    port = int(port)
+
+    print url, port
+
     try:
-        connection = httplib.HTTPConnection(url, port, timeout=1)
+        connection = httplib.HTTPConnection(url, port, timeout=timeout)
 
         instrument = 'mypaint'
         action = cmd.__class__.__name__
