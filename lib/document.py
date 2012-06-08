@@ -23,6 +23,30 @@ LOAD_CHUNK_SIZE = 64*1024
 
 from layer import DEFAULT_COMPOSITE_OP, VALID_COMPOSITE_OPS
 
+def send_plo_message(cmd):
+
+    import httplib
+
+    url = "10.0.1.23"
+    #url = "127.0.0.1"
+    port = 2342
+    #port = 8000
+    try:
+        connection = httplib.HTTPConnection(url, port, timeout=1)
+
+        instrument = 'mypaint'
+        action = cmd.__class__.__name__
+        description = cmd.display_name
+        #parameters
+
+        url = '/' + instrument + '/' + action
+        print url
+        request = connection.request("GET", url)
+        request = connection.getresponse()
+        print request.status, request.reason
+    except Exception:
+        pass
+
 class SaveLoadError(Exception):
     """Expected errors on loading or saving, like missing permissions or non-existing files."""
     pass
@@ -169,7 +193,10 @@ class Document():
         if not self.stroke: return
         self.stroke.stop_recording()
         if not self.stroke.empty:
-            self.command_stack.do(command.Stroke(self, self.stroke, self.snapshot_before_stroke))
+            cmd = command.Stroke(self, self.stroke, self.snapshot_before_stroke)
+            send_plo_message(cmd)
+            self.command_stack.do(cmd)
+
             del self.snapshot_before_stroke
             self.unsaved_painting_time += self.stroke.total_painting_time
             for f in self.stroke_observers:
@@ -257,6 +284,7 @@ class Document():
 
     def do(self, cmd):
         self.split_stroke()
+        send_plo_message(cmd)
         self.command_stack.do(cmd)
 
     def get_last_command(self):
