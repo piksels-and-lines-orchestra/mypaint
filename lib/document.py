@@ -25,19 +25,14 @@ from layer import DEFAULT_COMPOSITE_OP, VALID_COMPOSITE_OPS
 
 def send_plo_message(cmd, app=None):
 
-    import httplib
+    import liblo
 
     timeout = int(os.environ.get('PLO_TIMEOUT', '1'))
     server_string = os.environ.get('PLO_SERVER', '10.0.1.23:2342')
-    url, port = server_string.split(':')
+    host, port = server_string.split(':')
     port = int(port)
 
-    print url, port
-
-    try:
-        connection = httplib.HTTPConnection(url, port, timeout=timeout)
-    except Exception, e:
-        print e
+    print host, port
 
     instrument = 'mypaint'
     action = cmd.__class__.__name__
@@ -49,17 +44,14 @@ def send_plo_message(cmd, app=None):
     else:
         current_brush = ''
 
-    url = '/' + instrument + '/' + action
-
     # Make a stroke done with different brush have a different string
     if action == 'Stroke' and current_brush:
-        url = url + '/' + current_brush
+        action = action + '/' + current_brush
 
-    print url
+    print action
+    target = liblo.Address(host, port)
     try:
-        request = connection.request("GET", url)
-        request = connection.getresponse()
-        print request.status, request.reason
+        liblo.send(target, "/plo/player/action", instrument, action)
     except Exception, e:
         print e
 
