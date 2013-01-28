@@ -23,15 +23,20 @@ LOAD_CHUNK_SIZE = 64*1024
 
 from layer import DEFAULT_COMPOSITE_OP, VALID_COMPOSITE_OPS
 
-def send_plo_message(cmd, app=None):
-
-    import liblo
+def get_plo_target():
 
     timeout = int(os.environ.get('PLO_TIMEOUT', '1'))
     server_string = os.environ.get('PLO_SERVER', '10.0.1.23:2342')
     host, port = server_string.split(':')
     port = int(port)
 
+    return (host, port)    
+    
+def send_plo_message(cmd, app=None):
+
+    import liblo
+
+    host, port = get_plo_target()
     print host, port
 
     instrument = 'mypaint'
@@ -55,6 +60,15 @@ def send_plo_message(cmd, app=None):
     except Exception, e:
         print e
 
+def send_plo_stroke_to(x, y, pressure, xtilt, ytilt, dtime):
+    import liblo
+
+    host, port = get_plo_target()
+    target = liblo.Address(host, port)
+    try:
+        liblo.send(target, "/plo/mypaint/stroke_to", x, y, pressure, xtilt, ytilt, dtime)
+    except Exception, e:
+        print e
 
 class SaveLoadError(Exception):
     """Expected errors on loading or saving, like missing permissions or non-existing files."""
@@ -254,6 +268,7 @@ class Document():
             self.snapshot_before_stroke = self.layer.save_snapshot()
         self.stroke.record_event(dtime, x, y, pressure, xtilt, ytilt)
 
+        send_plo_stroke_to(x, y, pressure, xtilt, ytilt, dtime)
         split = self.layer.stroke_to(self.brush, x, y,
                                 pressure, xtilt, ytilt, dtime)
 
