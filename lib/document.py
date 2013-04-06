@@ -70,6 +70,18 @@ def send_plo_stroke_to(x, y, pressure, xtilt, ytilt, dtime):
     except Exception, e:
         print e
 
+def send_plo_state_change(brush):
+    import liblo
+    
+    states = [float(i) for i in brush.get_state()]
+    #print states
+    
+    target = liblo.Address(*get_plo_target())
+    try:
+        liblo.send(target, "/plo/mypaint/brush/states_changed", *states)
+    except Exception, e:
+        print e
+
 class SaveLoadError(Exception):
     """Expected errors on loading or saving, like missing permissions or non-existing files."""
     pass
@@ -271,6 +283,7 @@ class Document():
         send_plo_stroke_to(x, y, pressure, xtilt, ytilt, dtime)
         split = self.layer.stroke_to(self.brush, x, y,
                                 pressure, xtilt, ytilt, dtime)
+	send_plo_state_change(self.brush)
 
         if split:
             self.split_stroke()
