@@ -392,6 +392,22 @@ class Brush(mypaintlib.PythonBrush):
         self.set_state = self.python_set_state
         self.stroke_to = self.python_stroke_to
 
+        self.c_set_base_value = self.set_base_value
+        self.set_base_value = self.python_set_base_value
+
+    def python_set_base_value(self, setting_idx, val):
+        import liblo
+        import document
+        # TODO: put PLO stuff in separate file
+        cname = filter(lambda s: s.index == setting_idx, brushsettings.settings)[0].cname
+        t = document.get_plo_target()
+        try:
+            liblo.send(t, "/plo/mypaint/brush/setting_changed", cname, val)
+        except Exception, e:
+            print e
+
+        self.c_set_base_value(setting_idx, val)
+
     def update_brushinfo(self, settings):
         """Mirror changed settings into the BrushInfo tracking this Brush."""
 
