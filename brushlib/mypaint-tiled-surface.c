@@ -294,7 +294,8 @@ gboolean draw_dab_internal (MyPaintTiledSurface *self, float x, float y,
   }
 
 // returns TRUE if the surface was modified
-int draw_dab (MyPaintSurface *surface, float x, float y,
+int
+mypaint_tiled_surface_draw_dab (MyPaintSurface *surface, float x, float y,
                float radius,
                float color_r, float color_g, float color_b,
                float opaque, float hardness,
@@ -309,7 +310,8 @@ int draw_dab (MyPaintSurface *surface, float x, float y,
                            lock_alpha, colorize, 0);
 }
 
-void get_color (MyPaintSurface *surface, float x, float y,
+void
+mypaint_tiled_surface_get_color (MyPaintSurface *surface, float x, float y,
                   float radius,
                   float * color_r, float * color_g, float * color_b, float * color_a
                   )
@@ -395,8 +397,8 @@ void get_color (MyPaintSurface *surface, float x, float y,
 void
 mypaint_tiled_surface_init(MyPaintTiledSurface *self)
 {
-    self->parent.draw_dab = draw_dab;
-    self->parent.get_color = get_color;
+    self->parent.draw_dab = mypaint_tiled_surface_draw_dab;
+    self->parent.get_color = mypaint_tiled_surface_get_color;
 
     self->surface_do_symmetry = FALSE;
     self->surface_center_x = 0.0;

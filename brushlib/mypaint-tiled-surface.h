@@ -56,6 +56,24 @@ guint16 * mypaint_tiled_surface_get_tile(MyPaintTiledSurface *self, int tx, int 
 void mypaint_tiled_surface_update_tile(MyPaintTiledSurface *self, int tx, int ty, guint16* tile_buffer);
 void mypaint_tiled_surface_area_changed(MyPaintTiledSurface *self, int bb_x, int bb_y, int bb_w, int bb_h);
 
+/* Internal */
+int
+mypaint_tiled_surface_draw_dab (MyPaintSurface *surface, float x, float y,
+               float radius,
+               float color_r, float color_g, float color_b,
+               float opaque, float hardness,
+               float color_a,
+               float aspect_ratio, float angle,
+               float lock_alpha,
+               float colorize);
+
+/* Internal */
+void
+mypaint_tiled_surface_get_color (MyPaintSurface *surface, float x, float y,
+                  float radius,
+                  float * color_r, float * color_g, float * color_b, float * color_a
+                  );
+
 G_END_DECLS
 
 #endif // MYPAINTTILEDSURFACE_H
