@@ -358,6 +358,16 @@ class MyPaintSurface(mypaintlib.TiledSurface):
         return _InteractiveMove(self, x, y)
 
 
+    def draw_dab_callback(self, *args):
+        import liblo
+        import document
+        # TODO: put PLO stuff in separate file
+        t = document.get_plo_target()
+        try:
+            liblo.send(t, "/plo/mypaint/surface/draw_dab", *args)
+        except Exception, e:
+            print e
+
 class _InteractiveMove:
 
     def __init__(self, surface, x, y):

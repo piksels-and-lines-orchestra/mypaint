@@ -119,6 +119,35 @@ void area_changed(MyPaintTiledSurface *tiled_surface, int bb_x, int bb_y, int bb
     ExpandRectToIncludePoint (&self->dirty_bbox, bb_x+bb_w-1, bb_y+bb_h-1);
 }
 
+static int
+draw_dab(MyPaintSurface *self,
+                       float x, float y,
+                       float radius,
+                       float color_r, float color_g, float color_b,
+                       float opaque, float hardness,
+                       float alpha_eraser,
+                       float aspect_ratio, float angle,
+                       float lock_alpha,
+                       float colorize
+                       )
+{
+    const int surface_changed = mypaint_tiled_surface_draw_dab(self, x, y, radius, color_r, color_g, color_b,
+                   opaque, hardness, alpha_eraser, aspect_ratio, angle, lock_alpha, colorize);
+
+    if (surface_changed) {
+        PyObject* res = PyObject_CallMethod(((MyPaintPythonTiledSurface *)self)->py_obj, "draw_dab_callback", "(fffffffffffff)",
+                x, y, radius,
+                color_r, color_g, color_b,
+                opaque, hardness, alpha_eraser,
+                aspect_ratio, angle,
+                lock_alpha, colorize);
+        if (res) {
+            Py_DECREF(res);
+        }
+    }
+
+    return surface_changed;
+}
 
 MyPaintPythonTiledSurface *
 mypaint_python_tiled_surface_new(PyObject *py_object)
@@ -127,6 +156,7 @@ mypaint_python_tiled_surface_new(PyObject *py_object)
 
     mypaint_tiled_surface_init(&self->parent);
 
+    self->parent.parent.draw_dab = draw_dab;
     self->parent.parent.destroy = free_tiledsurf;
 
     self->parent.get_tile = get_tile_memory;
