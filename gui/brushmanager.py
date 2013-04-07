@@ -141,8 +141,22 @@ class BrushManager:
                 brushes = self.get_group_brushes(group, make_active=True)
 
         self.brushes_observers.append(self.brushes_modified_cb)
+        self.selected_brush_observers.append(self.plo_brush_changed)
 
         self.app.doc.input_stroke_ended_observers.append(self.input_stroke_ended_cb)
+
+    def plo_brush_changed(self, brush, brushinfo):
+
+        import liblo
+        from lib import document
+        # TODO: put PLO stuff in separate file
+        name = brush.name
+        t = document.get_plo_target()
+        try:
+            print name
+            liblo.send(t, "/plo/mypaint/brush/changed", name)
+        except Exception, e:
+            print e
 
     def select_initial_brush(self):
         initial_brush = None
